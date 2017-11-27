@@ -24,6 +24,7 @@ export const acceptWebSocketConnection = async (ws, req) => {
   });
 
   ws.on('close', () => {
+    console.log(`Closing socket for ${clientId}`);
     clientSockets.delete(clientId);
   });
 

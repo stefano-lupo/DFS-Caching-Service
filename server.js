@@ -86,7 +86,6 @@ const authenticator = (req, res, next) => {
 
 // Endpoints for Inter service communication (MUST BE BEFORE AUTHENTICATOR)
 app.put('/notify/:_id', CachingController.notifyOfUpdate);
-// app.get('/subscribed/:_id', CachingController.getSubscribedClients);
 
 app.use(authenticator);
 
