@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 
-const clientSchema = mongoose.Schema({ip: String}, {timestamps: true});
+const clientSchema = mongoose.Schema({}, {timestamps: true});
 
 const fileSchema = mongoose.Schema({
     version: {

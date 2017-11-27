@@ -4,16 +4,17 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import moment from 'moment';
+import expressWs from 'express-ws';
 
 // Import Controllers
 import * as CachingController from './controllers/CachingController';
 
 // Create Server
 const app = express();
+expressWs(app);
 app.use(bodyParser.urlencoded({extended: true}));   // Parses application/x-www-form-urlencoded for req.body
 app.use(bodyParser.json());                         // Parses application/json for req.body
 app.use(morgan('dev'));
-app.enable('trust proxy');                          // Provides req.ip
 
 // Initialize .env
 require('dotenv').config();
@@ -38,12 +39,16 @@ db.once('open', function() {
 
 
 
+// TODO: Add heartbeat stuff - need wss (https://github.com/websockets/ws#how-to-detect-and-close-broken-connections)
+
+
 // Middleware to authenticate / decrypt incoming requests
 const authenticator = (req, res, next) => {
 
   // Ensure auth ticket exists
   const { authorization } = req.headers;
   if(!authorization) {
+    console.log(`No auth key provided`);
     return res.status(401).send({message: `No authorization key provided`});
   }
 
@@ -69,7 +74,7 @@ const authenticator = (req, res, next) => {
     }
   }
 
-    // If JSON couldn't be parsed, the token was
+    // If JSON couldn't be parsed, the token was invalid
   catch(err) {
     console.error(err);
     return res.status(401).send({message: `Invalid authorization key provided`})
@@ -81,12 +86,13 @@ const authenticator = (req, res, next) => {
 
 // Endpoints for Inter service communication (MUST BE BEFORE AUTHENTICATOR)
 app.put('/notify/:_id', CachingController.notifyOfUpdate);
-app.get('/subscribed/:_id', CachingController.getSubscribedClients);
+// app.get('/subscribed/:_id', CachingController.getSubscribedClients);
 
 app.use(authenticator);
 
 
 // Endpoints for clients
+app.ws('/socket', CachingController.acceptWebSocketConnection);
 app.get('/subscribe/:_id', CachingController.subscribe);
 app.delete('/subscribe/:_id', CachingController.unsubscribe);
 
