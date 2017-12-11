@@ -55,7 +55,15 @@ export const subscribe = async (req, res) => {
     file = new File({_id})
   }
 
-  // Could cause problems with multiple subscriptions
+  // Ensure client isn't already subscribed
+  for(let i=0; i<file.subscribedClients.length; i++) {
+    const client = file.subscribedClients[i];
+    console.log(`client id : ${client._id}, against: ${clientId}`);
+    if (client._id.toString() === clientId) {
+      return res.send({message: `Client ${clientId} is already subscribed to file ${_id}`});
+    }
+  }
+
   file.subscribedClients.push({_id: clientId,});
 
   try {
