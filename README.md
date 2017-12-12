@@ -6,7 +6,7 @@ All client requests are behind a piece of middleware which examines the supplied
 
 
 ## The Caching Service
-The caching service is the code responsible for ensuring that all clients' files are up to date. It keeps a mongo db collection of Files which simply contain an `_id` `version` and an array of `subscribedClients`. The caching service is informed by the master file system node when an update has occured on a certain file. The caching service can then look up this file and find the `_id` of each of the clients who are subscribed to this file and invalidate their cached copies of the file.
+The caching service is the code responsible for ensuring that all clients' files are up to date. It keeps a mongo db collection of Files which simply contain an `_id`, `version` and an array of `subscribedClients` (clients who are subscribed to this file). The caching service is informed by the master file system node when an update has occured on a certain file. The caching service can then look up this file and find the `_id` of each of the clients who are subscribed to this file and invalidate their cached copies of the file.
 
 ### Callback Approach using WebSockets
 In order to implement a callback solution to the above problem (that is one where the client's are informed by the caching service when a file has been updated) instead of a polling solution (where the clients must ask the caching service if the file is still up to date), websockets were used, specifically [express-ws](https://github.com/HenningM/express-ws). 
