@@ -41,7 +41,7 @@ export const subscribe = async (req, res) => {
   const { clientId } = req;
   const { _id } = req.params;
 
-  // Save the clients socket
+  // Ensure client has an open socket connection
   if(!clientSockets.get(clientId)) {
     console.log(`Client ${clientId} requested a subscription without a socket`);
     return res.status(400).send({message: `You must have an open socket connection before subscribing to a file`});
@@ -84,7 +84,6 @@ export const unsubscribe = async (req, res) => {
   const { clientId } = req;
   const { _id } = req.params;
 
-  clientSockets.get(clientId).terminate();
 
   const file = await File.findOne({_id});
 
@@ -93,6 +92,7 @@ export const unsubscribe = async (req, res) => {
     return res.status(404).send({message: `File ${_id} has no subscribers`})
   }
 
+  // Remove this client from subscribed clients list
   file.subscribedClients.id(clientId).remove();
 
   try {
@@ -121,11 +121,9 @@ export const notifyOfUpdate = async (req, res) => {
     return res.send({message: 'Uh, thanks but I have no subscribers for that file..'});
   }
 
-  console.log(file.subscribedClients);
-
+  // Inform all clients that the file has been updated to this version
   file.version = version;
   invalidateClientCaches(_id, file.subscribedClients, version);
-
 
   try {
     await file.save();
@@ -137,6 +135,12 @@ export const notifyOfUpdate = async (req, res) => {
 };
 
 
+/**
+ * Informs all clients to invalidate their cache for a specific file
+ * @param _id of file to be invalidated
+ * @param subscribedClients list of clients who are subscribed to this file
+ * @param version the new version number for the file
+ */
 function invalidateClientCaches(_id, subscribedClients, version) {
   console.log(`Invalidating caches for file ${_id}`);
   subscribedClients.forEach(client => {

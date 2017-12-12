@@ -5,6 +5,8 @@ import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import moment from 'moment';
 import expressWs from 'express-ws';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Import Controllers
 import * as CachingController from './controllers/CachingController';
@@ -16,8 +18,6 @@ app.use(bodyParser.urlencoded({extended: true}));   // Parses application/x-www-
 app.use(bodyParser.json());                         // Parses application/json for req.body
 app.use(morgan('dev'));
 
-// Initialize .env
-require('dotenv').config();
 
 // Make encryption parameters accessible
 const encryption = {
@@ -84,7 +84,7 @@ const authenticator = (req, res, next) => {
 };
 
 
-// Endpoints for Inter service communication (MUST BE BEFORE AUTHENTICATOR)
+// Endpoints for Inter service communication
 app.put('/notify/:_id', CachingController.notifyOfUpdate);
 
 app.use(authenticator);
